@@ -22,7 +22,7 @@ socket.on('updatePlayers', (backEndPlayers) => {
         x: backEndPlayer.x,
         y: backEndPlayer.y,
         radius: 10,
-        color: 'hsl(0, 100%, 50%)'
+        color: backEndPlayer.color
       })
     }
   }

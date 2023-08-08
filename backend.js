@@ -20,7 +20,8 @@ io.on('connection', (socket) => {
   console.log('유저가 연결되었습니다.')
   backEndPlayers[socket.id] = {
     x: 500 * Math.random(),
-    y: 500 * Math.random()
+    y: 500 * Math.random(),
+    color: `hsl(${360 * Math.random()}, 100%, 50%)`
   }
 
   io.emit('updatePlayers', backEndPlayers)

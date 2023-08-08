@@ -30,7 +30,30 @@ io.on('connection', (socket) => {
     delete backEndPlayers[socket.id]
     io.emit('updatePlayers', backEndPlayers)
   })
+
+  socket.on('keydown', (keyCode) => {
+    switch (keyCode) {
+      case 'KeyW':
+        backEndPlayers[socket.id].y -= 5
+        break
+      case 'KeyA':
+        backEndPlayers[socket.id].x -= 5
+        break
+      case 'KeyS':
+        backEndPlayers[socket.id].y += 5
+        break
+      case 'KeyD':
+        backEndPlayers[socket.id].x += 5
+        break
+      default:
+        break
+    }
+  })
 })
+
+setInterval(() => {
+  io.emit('updatePlayers', backEndPlayers)
+}, 15)
 
 server.listen(port, () => {
   console.log(`서버가 ${port}포트로 시작되었습니다.`)

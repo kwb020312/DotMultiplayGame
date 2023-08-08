@@ -26,6 +26,10 @@ socket.on('updatePlayers', (backEndPlayers) => {
         radius: 10,
         color: backEndPlayer.color
       })
+    } else {
+      // 이미 존재하는 플레이어라면,
+      frontEndPlayers[id].x = backEndPlayer.x
+      frontEndPlayers[id].y = backEndPlayer.y
     }
   }
 
@@ -48,3 +52,24 @@ function animate() {
 }
 
 animate()
+
+window.addEventListener('keydown', (e) => {
+  if (!frontEndPlayers[socket.id]) return
+
+  switch (e.code) {
+    case 'KeyW':
+      socket.emit('keydown', 'KeyW')
+      break
+    case 'KeyA':
+      socket.emit('keydown', 'KeyA')
+      break
+    case 'KeyS':
+      socket.emit('keydown', 'KeyS')
+      break
+    case 'KeyD':
+      socket.emit('keydown', 'KeyD')
+      break
+    default:
+      break
+  }
+})

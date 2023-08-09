@@ -45,8 +45,13 @@ socket.on('updatePlayers', (backEndPlayers) => {
         })
       } else {
         // 그 외의 플레이어
-        frontEndPlayers[id].x = backEndPlayer.x
-        frontEndPlayers[id].y = backEndPlayer.y
+
+        gsap.to(frontEndPlayers[id], {
+          x: backEndPlayer.x,
+          y: backEndPlayer.y,
+          duration: 0.015,
+          ease: 'linear'
+        })
       }
     }
   }

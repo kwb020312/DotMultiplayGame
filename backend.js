@@ -16,6 +16,8 @@ app.get('/', (req, res) => {
 
 const backEndPlayers = {}
 
+const SPEED = 10
+
 io.on('connection', (socket) => {
   console.log('유저가 연결되었습니다.')
   backEndPlayers[socket.id] = {
@@ -34,16 +36,16 @@ io.on('connection', (socket) => {
   socket.on('keydown', (keyCode) => {
     switch (keyCode) {
       case 'KeyW':
-        backEndPlayers[socket.id].y -= 5
+        backEndPlayers[socket.id].y -= SPEED
         break
       case 'KeyA':
-        backEndPlayers[socket.id].x -= 5
+        backEndPlayers[socket.id].x -= SPEED
         break
       case 'KeyS':
-        backEndPlayers[socket.id].y += 5
+        backEndPlayers[socket.id].y += SPEED
         break
       case 'KeyD':
-        backEndPlayers[socket.id].x += 5
+        backEndPlayers[socket.id].x += SPEED
         break
       default:
         break
@@ -53,7 +55,7 @@ io.on('connection', (socket) => {
 
 setInterval(() => {
   io.emit('updatePlayers', backEndPlayers)
-}, 15)
+}, 1500)
 
 server.listen(port, () => {
   console.log(`서버가 ${port}포트로 시작되었습니다.`)

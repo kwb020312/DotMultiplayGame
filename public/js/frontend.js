@@ -27,9 +27,27 @@ socket.on('updatePlayers', (backEndPlayers) => {
         color: backEndPlayer.color
       })
     } else {
-      // 이미 존재하는 플레이어라면,
-      frontEndPlayers[id].x = backEndPlayer.x
-      frontEndPlayers[id].y = backEndPlayer.y
+      if (id === socket.id) {
+        // 이미 존재하는 플레이어라면,
+        frontEndPlayers[id].x = backEndPlayer.x
+        frontEndPlayers[id].y = backEndPlayer.y
+
+        const lastBackendInputIndex = playerInputs.findIndex(
+          (input) => backEndPlayer.sequenceNumber === input.sequenceNumber
+        )
+
+        if (lastBackendInputIndex > -1)
+          playerInputs.splice(0, lastBackendInputIndex + 1)
+
+        playerInputs.forEach((input) => {
+          frontEndPlayers[id].x += input.dx
+          frontEndPlayers[id].y += input.dy
+        })
+      } else {
+        // 그 외의 플레이어
+        frontEndPlayers[id].x = backEndPlayer.x
+        frontEndPlayers[id].y = backEndPlayer.y
+      }
     }
   }
 
@@ -69,22 +87,33 @@ const keys = {
 }
 
 const SPEED = 10
+const playerInputs = []
+let sequenceNumber = 0
+
 setInterval(() => {
   if (keys.w.pressed) {
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, dx: 0, dy: -SPEED })
+    socket.emit('keydown', { keycode: 'KeyW', sequenceNumber })
     frontEndPlayers[socket.id].y -= SPEED
-    socket.emit('keydown', 'KeyW')
   }
   if (keys.a.pressed) {
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, dx: -SPEED, dy: 0 })
+    socket.emit('keydown', { keycode: 'KeyA', sequenceNumber })
     frontEndPlayers[socket.id].x -= SPEED
-    socket.emit('keydown', 'KeyA')
   }
   if (keys.s.pressed) {
-    socket.emit('keydown', 'KeyS')
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, dx: 0, dy: SPEED })
     frontEndPlayers[socket.id].y += SPEED
+    socket.emit('keydown', { keycode: 'KeyS', sequenceNumber })
   }
   if (keys.d.pressed) {
-    socket.emit('keydown', 'KeyD')
+    sequenceNumber++
+    playerInputs.push({ sequenceNumber, dx: SPEED, dy: 0 })
     frontEndPlayers[socket.id].x += SPEED
+    socket.emit('keydown', { keycode: 'KeyD', sequenceNumber })
   }
 }, 15)
 

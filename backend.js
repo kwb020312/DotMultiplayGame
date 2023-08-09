@@ -23,7 +23,8 @@ io.on('connection', (socket) => {
   backEndPlayers[socket.id] = {
     x: 500 * Math.random(),
     y: 500 * Math.random(),
-    color: `hsl(${360 * Math.random()}, 100%, 50%)`
+    color: `hsl(${360 * Math.random()}, 100%, 50%)`,
+    sequenceNumber: 0
   }
 
   io.emit('updatePlayers', backEndPlayers)
@@ -33,8 +34,9 @@ io.on('connection', (socket) => {
     io.emit('updatePlayers', backEndPlayers)
   })
 
-  socket.on('keydown', (keyCode) => {
-    switch (keyCode) {
+  socket.on('keydown', ({ keycode, sequenceNumber }) => {
+    backEndPlayers[socket.id].sequenceNumber = sequenceNumber
+    switch (keycode) {
       case 'KeyW':
         backEndPlayers[socket.id].y -= SPEED
         break
@@ -55,7 +57,7 @@ io.on('connection', (socket) => {
 
 setInterval(() => {
   io.emit('updatePlayers', backEndPlayers)
-}, 1500)
+}, 15)
 
 server.listen(port, () => {
   console.log(`서버가 ${port}포트로 시작되었습니다.`)

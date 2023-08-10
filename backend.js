@@ -15,8 +15,10 @@ app.get('/', (req, res) => {
 })
 
 const backEndPlayers = {}
+const backEndProjectiles = {}
 
 const SPEED = 10
+let projectileId = 0
 
 io.on('connection', (socket) => {
   console.log('유저가 연결되었습니다.')
@@ -28,6 +30,22 @@ io.on('connection', (socket) => {
   }
 
   io.emit('updatePlayers', backEndPlayers)
+
+  socket.on('shoot', ({ x, y, angle }) => {
+    projectileId++
+
+    const velocity = {
+      x: Math.cos(angle) * 5,
+      y: Math.sin(angle) * 5
+    }
+
+    backEndProjectiles[projectileId] = {
+      x,
+      y,
+      velocity,
+      playerId: socket.id
+    }
+  })
 
   socket.on('disconnect', (reason) => {
     delete backEndPlayers[socket.id]
@@ -55,7 +73,16 @@ io.on('connection', (socket) => {
   })
 })
 
+// backend ticker
 setInterval(() => {
+  // 탄환 update
+
+  for (const id in backEndProjectiles) {
+    backEndProjectiles[id].x += backEndProjectiles[id].velocity.x
+    backEndProjectiles[id].y += backEndProjectiles[id].velocity.y
+  }
+
+  io.emit('updateProjectiles', backEndProjectiles)
   io.emit('updatePlayers', backEndPlayers)
 }, 15)
 

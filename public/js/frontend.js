@@ -69,15 +69,16 @@ function animate() {
   animationId = requestAnimationFrame(animate)
   c.fillStyle = 'rgba(0, 0, 0, 0.1)'
   c.fillRect(0, 0, canvas.width, canvas.height)
+
   for (const id in frontEndPlayers) {
     const frontEndPlayer = frontEndPlayers[id]
     frontEndPlayer.draw()
   }
 
-  for (let i = frontEndProjectiles.length - 1; i >= 0; i--) {
-    const frontEndProjectile = frontEndProjectiles[i]
-    frontEndProjectile.update()
-  }
+  // for (let i = frontEndProjectiles.length - 1; i >= 0; i--) {
+  //   const frontEndProjectile = frontEndProjectiles[i]
+  //   frontEndProjectile.update()
+  // }
 }
 
 animate()

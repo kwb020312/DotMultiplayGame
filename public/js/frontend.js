@@ -63,8 +63,12 @@ socket.on('updatePlayers', (backEndPlayers) => {
 
       document.querySelector(
         '#playerLabels'
-      ).innerHTML += `<div data-id="${id}">${id}: 0</div>`
+      ).innerHTML += `<div data-id="${id}">${id}: ${backEndPlayer.score}</div>`
     } else {
+      document.querySelector(
+        `div[data-id="${id}"]`
+      ).innerHTML = `${id}: ${backEndPlayer.score}`
+
       if (id === socket.id) {
         // if a player already exists
         frontEndPlayers[id].x = backEndPlayer.x
@@ -83,7 +87,6 @@ socket.on('updatePlayers', (backEndPlayers) => {
         })
       } else {
         // for all other players
-
         gsap.to(frontEndPlayers[id], {
           x: backEndPlayer.x,
           y: backEndPlayer.y,

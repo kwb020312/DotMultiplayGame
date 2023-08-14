@@ -63,11 +63,34 @@ socket.on('updatePlayers', (backEndPlayers) => {
 
       document.querySelector(
         '#playerLabels'
-      ).innerHTML += `<div data-id="${id}">${id}: ${backEndPlayer.score}</div>`
+      ).innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${id}: ${backEndPlayer.score}</div>`
     } else {
       document.querySelector(
         `div[data-id="${id}"]`
       ).innerHTML = `${id}: ${backEndPlayer.score}`
+      document
+        .querySelector(`div[data-id="${id}"]`)
+        .setAttribute('data-score', backEndPlayer.score)
+
+      // data-score 기준 내림차 순 정렬
+      const parentDiv = document.querySelector('#playerLabels')
+      const childDivs = Array.from(parentDiv.querySelector('div'))
+
+      childDivs.sort((a, b) => {
+        const scoreA = Number(a.getAttribute('data-score'))
+        const scoreB = Number(b.getAttribute('data-score'))
+        return scoreB - scoreA
+      })
+
+      // 이전 div 삭제
+      childDivs.forEach((div) => {
+        parentDiv.removeChild(div)
+      })
+
+      // 갱신된 div 입력
+      childDivs.forEach((div) => {
+        parentDiv.appendChild(div)
+      })
 
       if (id === socket.id) {
         // if a player already exists

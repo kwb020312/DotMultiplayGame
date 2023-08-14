@@ -60,6 +60,10 @@ socket.on('updatePlayers', (backEndPlayers) => {
         radius: 10,
         color: backEndPlayer.color
       })
+
+      document.querySelector(
+        '#playerLabels'
+      ).innerHTML += `<div data-id="${id}">${id}: 0</div>`
     } else {
       if (id === socket.id) {
         // if a player already exists
@@ -90,8 +94,11 @@ socket.on('updatePlayers', (backEndPlayers) => {
     }
   }
 
+  // 프론트엔드 플레이어 제거 로직
   for (const id in frontEndPlayers) {
     if (!backEndPlayers[id]) {
+      const divToDelete = document.querySelector(`div[data-id="${id}"]`)
+      divToDelete.parentNode.removeChild(divToDelete)
       delete frontEndPlayers[id]
     }
   }

@@ -63,35 +63,38 @@ socket.on('updatePlayers', (backEndPlayers) => {
       document.querySelector(
         `div[data-id="${id}"]`
       ).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score}`
+
       document
         .querySelector(`div[data-id="${id}"]`)
         .setAttribute('data-score', backEndPlayer.score)
 
-      // data-score 기준 내림차 순 정렬
+      // sorts the players divs
       const parentDiv = document.querySelector('#playerLabels')
-      const childDivs = Array.from(parentDiv.querySelector('div'))
+      const childDivs = Array.from(parentDiv.querySelectorAll('div'))
 
       childDivs.sort((a, b) => {
         const scoreA = Number(a.getAttribute('data-score'))
         const scoreB = Number(b.getAttribute('data-score'))
+
         return scoreB - scoreA
       })
 
-      // 이전 div 삭제
+      // removes old elements
       childDivs.forEach((div) => {
         parentDiv.removeChild(div)
       })
 
-      // 갱신된 div 입력
+      // adds sorted elements
       childDivs.forEach((div) => {
         parentDiv.appendChild(div)
       })
 
-      if (id === socket.id) {
-        // if a player already exists
-        frontEndPlayers[id].x = backEndPlayer.x
-        frontEndPlayers[id].y = backEndPlayer.y
+      frontEndPlayers[id].target = {
+        x: backEndPlayer.x,
+        y: backEndPlayer.y
+      }
 
+      if (id === socket.id) {
         const lastBackendInputIndex = playerInputs.findIndex((input) => {
           return backEndPlayer.sequenceNumber === input.sequenceNumber
         })
@@ -100,29 +103,21 @@ socket.on('updatePlayers', (backEndPlayers) => {
           playerInputs.splice(0, lastBackendInputIndex + 1)
 
         playerInputs.forEach((input) => {
-          frontEndPlayers[id].x += input.dx
-          frontEndPlayers[id].y += input.dy
-        })
-      } else {
-        // for all other players
-        gsap.to(frontEndPlayers[id], {
-          x: backEndPlayer.x,
-          y: backEndPlayer.y,
-          duration: 0.015,
-          ease: 'linear'
+          frontEndPlayers[id].target.x += input.dx
+          frontEndPlayers[id].target.y += input.dy
         })
       }
     }
   }
 
-  // 프론트엔드 플레이어 제거 로직
+  // this is where we delete frontend players
   for (const id in frontEndPlayers) {
     if (!backEndPlayers[id]) {
       const divToDelete = document.querySelector(`div[data-id="${id}"]`)
       divToDelete.parentNode.removeChild(divToDelete)
 
-      if(id === socket.id) {
-        document.querySelector("#usernameForm").style.display="block"
+      if (id === socket.id) {
+        document.querySelector('#usernameForm').style.display = 'block'
       }
 
       delete frontEndPlayers[id]
@@ -133,12 +128,20 @@ socket.on('updatePlayers', (backEndPlayers) => {
 let animationId
 function animate() {
   animationId = requestAnimationFrame(animate)
-  c.fillStyle = 'rgba(0, 0, 0, 0.1)'
-  // c.fillRect(0, 0, canvas.width, canvas.height)
+  // c.fillStyle = 'rgba(0, 0, 0, 0.1)'
   c.clearRect(0, 0, canvas.width, canvas.height)
 
   for (const id in frontEndPlayers) {
     const frontEndPlayer = frontEndPlayers[id]
+
+    // linear interpolation
+    if (frontEndPlayer.target) {
+      frontEndPlayers[id].x +=
+        (frontEndPlayers[id].target.x - frontEndPlayers[id].x) * 0.5
+      frontEndPlayers[id].y +=
+        (frontEndPlayers[id].target.y - frontEndPlayers[id].y) * 0.5
+    }
+
     frontEndPlayer.draw()
   }
 
@@ -170,35 +173,35 @@ const keys = {
   }
 }
 
-const SPEED = 10
+const SPEED = 5
 const playerInputs = []
 let sequenceNumber = 0
 setInterval(() => {
   if (keys.w.pressed) {
     sequenceNumber++
     playerInputs.push({ sequenceNumber, dx: 0, dy: -SPEED })
-    frontEndPlayers[socket.id].y -= SPEED
+    // frontEndPlayers[socket.id].y -= SPEED
     socket.emit('keydown', { keycode: 'KeyW', sequenceNumber })
   }
 
   if (keys.a.pressed) {
     sequenceNumber++
     playerInputs.push({ sequenceNumber, dx: -SPEED, dy: 0 })
-    frontEndPlayers[socket.id].x -= SPEED
+    // frontEndPlayers[socket.id].x -= SPEED
     socket.emit('keydown', { keycode: 'KeyA', sequenceNumber })
   }
 
   if (keys.s.pressed) {
     sequenceNumber++
     playerInputs.push({ sequenceNumber, dx: 0, dy: SPEED })
-    frontEndPlayers[socket.id].y += SPEED
+    // frontEndPlayers[socket.id].y += SPEED
     socket.emit('keydown', { keycode: 'KeyS', sequenceNumber })
   }
 
   if (keys.d.pressed) {
     sequenceNumber++
     playerInputs.push({ sequenceNumber, dx: SPEED, dy: 0 })
-    frontEndPlayers[socket.id].x += SPEED
+    // frontEndPlayers[socket.id].x += SPEED
     socket.emit('keydown', { keycode: 'KeyD', sequenceNumber })
   }
 }, 15)
@@ -247,15 +250,13 @@ window.addEventListener('keyup', (event) => {
   }
 })
 
-document.querySelector("#usernameForm").addEventListener('submit', (event) => {
+document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   event.preventDefault()
-  document.querySelector("#usernameForm").style.display = 'none'
-  socket.emit("initGame", 
-  {
-    username: document.querySelector("#usernameInput").value,
+  document.querySelector('#usernameForm').style.display = 'none'
+  socket.emit('initGame', {
     width: canvas.width,
     height: canvas.height,
-    devicePixelRatio
-  }
-  )
+    devicePixelRatio,
+    username: document.querySelector('#usernameInput').value
+  })
 })

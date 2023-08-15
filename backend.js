@@ -18,14 +18,13 @@ app.get('/', (req, res) => {
 const backEndPlayers = {}
 const backEndProjectiles = {}
 
-const SPEED = 10
+const SPEED = 5
 const RADIUS = 10
 const PROJECTILE_RADIUS = 5
 let projectileId = 0
 
 io.on('connection', (socket) => {
   console.log('a user connected')
-  
 
   io.emit('updatePlayers', backEndPlayers)
 
@@ -44,9 +43,10 @@ io.on('connection', (socket) => {
       playerId: socket.id
     }
 
+    console.log(backEndProjectiles)
   })
 
-  socket.on("initGame", ({username, width, height}) => {
+  socket.on('initGame', ({ username, width, height }) => {
     backEndPlayers[socket.id] = {
       x: 1024 * Math.random(),
       y: 576 * Math.random(),
@@ -56,14 +56,13 @@ io.on('connection', (socket) => {
       username
     }
 
-    // canvas 넓이 조정
+    // where we init our canvas
     backEndPlayers[socket.id].canvas = {
       width,
       height
     }
 
     backEndPlayers[socket.id].radius = RADIUS
-
   })
 
   socket.on('disconnect', (reason) => {
@@ -74,7 +73,9 @@ io.on('connection', (socket) => {
 
   socket.on('keydown', ({ keycode, sequenceNumber }) => {
     const backEndPlayer = backEndPlayers[socket.id]
-    
+
+    if (!backEndPlayers[socket.id]) return
+
     backEndPlayers[socket.id].sequenceNumber = sequenceNumber
     switch (keycode) {
       case 'KeyW':
@@ -98,13 +99,18 @@ io.on('connection', (socket) => {
       left: backEndPlayer.x - backEndPlayer.radius,
       right: backEndPlayer.x + backEndPlayer.radius,
       top: backEndPlayer.y - backEndPlayer.radius,
-      bottom: backEndPlayer.y + backEndPlayer.radius,
+      bottom: backEndPlayer.y + backEndPlayer.radius
     }
 
-    if(playerSides.left < 0) backEndPlayer.x = backEndPlayer.radius
-    if(playerSides.right > 1024) backEndPlayer.x = 1024 - backEndPlayer.radius
-    if(playerSides.top > 574) backEndPlayer.y = 574 - backEndPlayer.radius
-    if(playerSides.bottom < 0) backEndPlayer.y = backEndPlayer.radius
+    if (playerSides.left < 0) backEndPlayers[socket.id].x = backEndPlayer.radius
+
+    if (playerSides.right > 1024)
+      backEndPlayers[socket.id].x = 1024 - backEndPlayer.radius
+
+    if (playerSides.top < 0) backEndPlayers[socket.id].y = backEndPlayer.radius
+
+    if (playerSides.bottom > 576)
+      backEndPlayers[socket.id].y = 576 - backEndPlayer.radius
   })
 })
 
@@ -135,13 +141,16 @@ setInterval(() => {
         backEndProjectiles[id].x - backEndPlayer.x,
         backEndProjectiles[id].y - backEndPlayer.y
       )
-      // 충돌 감지
+
+      // collision detection
       if (
         DISTANCE < PROJECTILE_RADIUS + backEndPlayer.radius &&
         backEndProjectiles[id].playerId !== playerId
       ) {
         if (backEndPlayers[backEndProjectiles[id].playerId])
           backEndPlayers[backEndProjectiles[id].playerId].score++
+
+        console.log(backEndPlayers[backEndProjectiles[id].playerId])
         delete backEndProjectiles[id]
         delete backEndPlayers[playerId]
         break

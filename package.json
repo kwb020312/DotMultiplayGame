@@ -4,6 +4,7 @@
     "socket.io": "4.6.1"
   },
   "scripts": {
-    "build": "nodemon backend.js"
+    "build": "nodemon backend.js",
+    "start": "nodemon backend.js"
   }
 }

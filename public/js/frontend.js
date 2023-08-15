@@ -117,6 +117,11 @@ socket.on('updatePlayers', (backEndPlayers) => {
     if (!backEndPlayers[id]) {
       const divToDelete = document.querySelector(`div[data-id="${id}"]`)
       divToDelete.parentNode.removeChild(divToDelete)
+
+      if(id === socket.id) {
+        document.querySelector("#usernameForm").style.display="block"
+      }
+
       delete frontEndPlayers[id]
     }
   }
@@ -240,6 +245,7 @@ window.addEventListener('keyup', (event) => {
 
 document.querySelector("#usernameForm").addEventListener('submit', (event) => {
   event.preventDefault()
+  document.querySelector("#usernameForm").style.display = 'none'
   socket.emit("initGame", 
   {
     username: document.querySelector("#usernameInput").value,

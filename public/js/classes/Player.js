@@ -7,6 +7,9 @@ class Player {
   }
 
   draw() {
+    c.save()
+    c.shadowColor = this.color
+    c.shadowBlur = 20
     c.beginPath()
     c.arc(
       this.x,
@@ -18,5 +21,6 @@ class Player {
     )
     c.fillStyle = this.color
     c.fill()
+    c.restore()
   }
 }

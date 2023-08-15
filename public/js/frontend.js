@@ -16,14 +16,6 @@ const y = canvas.height / 2
 const frontEndPlayers = {}
 const frontEndProjectiles = {}
 
-socket.on('connect', () => {
-  socket.emit('initCanvas', {
-    width: canvas.width,
-    height: canvas.height,
-    devicePixelRatio
-  })
-})
-
 socket.on('updateProjectiles', (backEndProjectiles) => {
   for (const id in backEndProjectiles) {
     const backEndProjectile = backEndProjectiles[id]
@@ -63,11 +55,11 @@ socket.on('updatePlayers', (backEndPlayers) => {
 
       document.querySelector(
         '#playerLabels'
-      ).innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${id}: ${backEndPlayer.score}</div>`
+      ).innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score}</div>`
     } else {
       document.querySelector(
         `div[data-id="${id}"]`
-      ).innerHTML = `${id}: ${backEndPlayer.score}`
+      ).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score}`
       document
         .querySelector(`div[data-id="${id}"]`)
         .setAttribute('data-score', backEndPlayer.score)
@@ -248,5 +240,12 @@ window.addEventListener('keyup', (event) => {
 
 document.querySelector("#usernameForm").addEventListener('submit', (event) => {
   event.preventDefault()
-  document.querySelector("#usernameInput").value
+  socket.emit("initGame", 
+  {
+    username: document.querySelector("#usernameInput").value,
+    width: canvas.width,
+    height: canvas.height,
+    devicePixelRatio
+  }
+  )
 })
